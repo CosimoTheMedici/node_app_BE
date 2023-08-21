@@ -6,44 +6,6 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 .pnpm-debug.log*
-# Node.js and NPM
-node_modules/
-npm-debug.log
-yarn-error.log
-
-# Build output
-dist/
-build/
-out/
-
-# Logs
-logs/
-*.log
-
-# Editor and IDE files
-.vscode/
-.idea/
-*.sublime-project
-*.sublime-workspace
-
-# Environment variables and secrets
-.env
-.env.local
-.env.*.local
-.env.*.production
-.env.production
-
-# Dependency lock files
-package-lock.json
-yarn.lock
-
-# Miscellaneous
-.DS_Store
-Thumbs.db
-
-# Optional: Exclude specific directories/files if needed
-# /path/to/specific_directory
-# /path/to/specific_file.js
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
