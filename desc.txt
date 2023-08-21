@@ -1,0 +1,45 @@
+1-water charge
+2-KPLC charge
+3-garbage charge
+
+status
+enabled-1
+disabled-2
+
+
+visibility
+display-1
+display none-2
+
+payment status
+verified - 2
+not verified - 1
+
+
+occupancy 
+1-occupied
+2-vacant
+
+
+users category
+superuser -  6000,2001
+agent -      3000,2001
+owner -      4000,2001
+agent-owner- 5000,2001
+tenant -     2000,2001
+
+
+payment methods
+1 mpesa
+2 Equity bank
+3 Equity agent
+4 coop bank
+5 coop agent
+6 kcb bank 
+7 kcb agent
+
+
+
+agent user
+is a User - 1
+is not a user - 2
