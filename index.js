@@ -35,7 +35,7 @@ app.use('/api/v1/tenants',require('./src/routes/tenantRouter'));
 app.use('/api/v1/payments',require('./src/routes/paymentRouter'));
 app.use('/api/v1/agents',require('./src/routes/agentRouter'));
 app.use('/api/v1/transactions',require('./src/routes/transactionRouter'));
-//app.use('/api/busness/',require('./src/routesbusinessRouter'));
+
 
 app.get('/', (req, res) => {
     res.send('Hello worlldk')
