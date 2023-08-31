@@ -36,4 +36,6 @@ static async getInvoices() {
         throw error;
     }
 }
+
+
 }

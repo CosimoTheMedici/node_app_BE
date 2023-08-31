@@ -41,7 +41,7 @@ static async updateUnitOccupancy(data,callBack) {
     try {
         const columnList = "*";
         const conditionList = data
-        const result = db.query(`UPDATE units SET unit_occupancy = 1 WHERE unit_id = ?;`,
+        const result = db.query(`UPDATE units SET unit_occupancy = 2 WHERE unit_id = ?;`,
     conditionList,
     (error,results,field) => {
         if(error){
@@ -77,7 +77,7 @@ static async getAllVacantUnitsByPropertyID(data,callBack) {
     try {
         const columnList = "*";
         const conditionList = [data]
-        const result = db.query(`SELECT * FROM units WHERE unit_occupancy=2 AND unit_property_id = ?`,
+        const result = db.query(`SELECT * FROM units WHERE unit_occupancy=1 AND unit_property_id = ?`,
     conditionList,
     (error,results,field) => {
         if(error){

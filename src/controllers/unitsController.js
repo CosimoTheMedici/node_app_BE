@@ -135,7 +135,7 @@ exports.createUnits = (req,res) => {
 
   validateUser(testBody)
   .then((user) => {
-      body = {...body ,unit_createdBy: user.id,unit_occupancy:2,unit_status:1};
+      body = {...body ,unit_createdBy: user.id,unit_occupancy:1,unit_status:1};
       UnitModel.createUnit(body,(err,results) =>{
           if(err){
           console.log(err)
