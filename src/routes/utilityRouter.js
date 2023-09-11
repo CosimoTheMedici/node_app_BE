@@ -12,5 +12,6 @@ router.get('/agentChargesArray',validateToken,rolesValidator(2001), chargesContr
 router.get('/agentProperties/:id',validateToken,rolesValidator(2001),propertiesController.getAgentPropertiesData );
 router.post('/createCharge',validateToken,rolesValidator(2001), chargesController.createCharges);
 router.post('/createConsumption',validateToken,rolesValidator(2001,3000), chargesController.createConsumptionUtility);
+router.get('/getConsumption',validateToken,rolesValidator(2001), chargesController.getAllConsumptionUtility);
 
 module.exports = router;

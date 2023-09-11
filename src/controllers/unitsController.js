@@ -94,6 +94,24 @@ exports.getVacantUnitsByPropertyID = (req,res) => {
 
     
 }
+exports.getOccupiedUnitsByPropertyID = (req,res) => {
+    const id = req.params.id
+    console.log("param",id)
+   
+
+    UnitModel.getAllOccupiedUnitsByPropertyID(id,(err,results) =>{
+        console.log("results1")
+        console.log("results",results)
+        if(err){
+        console.log(err)
+        return sendResponse(res,0,"",500,"Database ectionm invalid"+err)
+      }
+      return sendResponse(res,1,results,200,"data")
+ 
+    })
+
+    
+}
 
 
 exports.getAgentPropertiesData = (req,res) => {

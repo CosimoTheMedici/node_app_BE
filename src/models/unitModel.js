@@ -92,6 +92,25 @@ static async getAllVacantUnitsByPropertyID(data,callBack) {
     }
 }
 
+static async getAllOccupiedUnitsByPropertyID(data,callBack) {
+    try {
+        const columnList = "*";
+        const conditionList = [data]
+        const result = db.query(`SELECT * FROM units WHERE unit_occupancy=2 AND unit_property_id = ?`,
+    conditionList,
+    (error,results,field) => {
+        if(error){
+            return callBack(error);
+        }
+        return callBack(null, results)
+    })
+
+    } catch (error) {
+        console.log("error--",{error})
+        throw error;
+    }
+}
+
 
 static async getAllUnitsByPropertyID  (data,callBack) {
     db.query('SELECT * FROM units WHERE unit_property_id = ?',

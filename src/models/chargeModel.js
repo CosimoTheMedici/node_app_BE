@@ -46,7 +46,7 @@ static async getAllChargesByPropertyID(id,callBack) {
     )
 }
 
-static async getConsumptionLastRecord(data,callBack) {
+static async getConsumptionLastRecordo(data,callBack) {
     const conditionList = data
     db.query(`SELECT MAX(reading_id) AS latest_id FROM reading WHERE reading_propertyID = ? and reading_unitID =?   and reading_utilityTypeID = ?`,
     conditionList,
@@ -59,6 +59,52 @@ static async getConsumptionLastRecord(data,callBack) {
 
     )
 }
+static async getConsumptionLastRecord(data) {
+    const conditionList = data
+    const sqlQuery = `SELECT MAX(reading_id) AS latest_id,reading_prev_reading,reading_nowReading FROM reading WHERE reading_propertyID = ? and reading_unitID =?   and reading_utilityTypeID = ?`;
+
+    return new Promise((resolve, reject) => {
+        db.query(sqlQuery,conditionList,(error, results, field) => {
+            if (error) {
+                reject(error);
+            } else {
+                resolve(results);
+            }
+        });
+    });
+}
+static async getUnitUtilityFees(utilityType, reading_unitID) {
+    const sqlQuery = `SELECT * FROM units LEFT JOIN utility_Charges ON units.${utilityType} = utility_Charges.charge_id WHERE units.unit_id = ${reading_unitID}`;
+
+    return new Promise((resolve, reject) => {
+        db.query(sqlQuery,(error, results, field) => {
+            if (error) {
+                reject(error);
+            } else {
+                resolve(results);
+            }
+        });
+    });
+}
+
+static async getUnitUtilityFees88(utilityType, reading_unitID, callBack) {
+    const conditionList = [reading_unitID];
+
+    // Create the SQL query string
+    const sqlQuery = `SELECT * FROM units LEFT JOIN utility_Charges ON units.${utilityType} = utility_Charges.charge_id WHERE units.unit_id = ${reading_unitID}`;
+
+    // Log the SQL query
+    console.log(sqlQuery);
+
+    db.query(sqlQuery, (error, results, field) => {
+        if (error) {
+            return callBack(error);
+        }
+        return callBack(null, results);
+    });
+}
+
+
 static async createUtilityCharge(data,callBack) {
     const conditionList = [data]
     db.query(`INSERT INTO utility_Charges SET ?`,

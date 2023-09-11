@@ -158,6 +158,64 @@ exports.getALLChargesByPropertyID= (req,res) => {
 
     
 }
+exports.getAllConsumptionUtility= (req,res) => {
+    const id = req.params.id
+
+    let token = req.headers.authorization;
+
+    token=token.slice(7)
+    let decoded = jwt_decode(token)
+    console.log("decoded---",decoded.email)
+    let data = decoded.email
+
+   
+
+    const testBody = {
+      email: decoded.email,
+      createdBy :decoded.email
+    }
+
+    validateUser(testBody)
+    .then((user) => {
+          console.log("user.email",user.email)
+     
+  
+            let role = user.user_category.split(',')[1];
+      if(role==5000){
+  
+  
+        ReadingModel.getALLUtilityReadings((err,results) =>{
+          if(err)return sendResponse(res,0,"",500,"error something went wrong"+err)
+          if(!results)return sendResponse(res,0,"",500,"no response")
+          if(results){
+            console.log("results are here",results)
+            return sendResponse(res,1,results,200,"data")
+          }
+      
+        })
+        
+  
+      }else if (role==3000){
+        
+  
+        ReadingModel.getALLUtilityReadings(user.email,(err,results) =>{
+            if(err){
+            console.log(err)
+            return sendResponse(res,0,"",500,"con invalid"+err)
+          }
+          console.log("results --->",results)
+          return sendResponse(res,1,results,200,"data added")
+        }) 
+      }  
+      
+    })
+    .catch((error) => {
+      // Handle the error
+      return sendResponse(res,1,results,400,"data added"+error)
+    });
+
+    
+}
 
 
 exports.createCharges = (req,res) => {
@@ -184,7 +242,7 @@ exports.createCharges = (req,res) => {
   })
 
 }
-exports.createConsumptionUtility = (req,res) => {
+exports.createConsumptionUtility1 = (req,res) => {
   let body = req.body
   let token = req.headers.authorization;
 
@@ -271,3 +329,111 @@ var date_time = current_date+" "+current_time;
 
 
 }
+
+exports.createConsumptionUtility = async (req, res) => {
+  try {
+    let { body, headers } = req;
+    const token = headers.authorization.slice(7);
+    const decoded = jwt_decode(token);
+
+    const testBody = {
+      email: decoded.email,
+      createdBy: body.reading_createdBy
+    };
+
+    const user = await validateUser(testBody);
+
+    const date = new Date();
+    const current_date = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+    const current_time = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
+    const date_time = `${current_date} ${current_time}`;
+
+    const {reading_unitID} = body
+
+    const searchdata = [body.reading_propertyID, body.reading_unitID, body.reading_utilityTypeID];
+    let utilityType
+    if(body.reading_utilityTypeID && body.reading_utilityTypeID == 1)utilityType="unit_water_charge"
+    if(body.reading_utilityTypeID && body.reading_utilityTypeID == 2)utilityType="unit_kplc_charge"
+    if(body.reading_utilityTypeID && body.reading_utilityTypeID == 3)utilityType="unit_garbage_charge"
+
+    const resultsl = await ChargeModel.getUnitUtilityFees(utilityType,reading_unitID);
+    const {charge_per_unit}= resultsl[0]
+   
+    const results = await ChargeModel.getConsumptionLastRecord(searchdata);
+ console.log("results-  --->",results)
+ 
+ 
+    if (!results || !results[0] || results[0].latest_id === null || results[0].latest_id === undefined || results[0].latest_id === "") {
+      console.log("results ->", results[0].latest_id);
+      body = {
+        ...body,
+        reading_status: 1,
+        reading_visibility: 1,
+        reading_createdBy: user.id,
+        reading_date: date_time,
+        reading_prev_reading: 0,
+        reading_record: body.reading_nowReading,
+        reading_payment_status: 2,
+        reading_amount:charge_per_unit * body.reading_nowReading
+      };
+      console.log("body---->1", body);
+    } else {
+      console.log("meee");
+      const reading = body.reading_nowReading - results[0].reading_prev_reading;
+      console.log("reading*charge_per_unit",reading,charge_per_unit)
+      body = {
+        ...body,
+        reading_status: 1,
+        reading_visibility: 1,
+        reading_createdBy: user.id,
+        reading_date: date_time,
+        reading_prev_reading: results[0].reading_nowReading,
+        reading_record: reading,
+        reading_payment_status: 2,
+        reading_amount:charge_per_unit * reading
+      };
+      console.log("body---->2", body);
+    }
+
+  //   //const createdReading = await ReadingModel.createUtilityReading(body);
+
+    ReadingModel.createUtilityReading(body,(err,results) =>{
+      if(err){
+      console.log(err)
+      return sendResponse(res,0,"",500,"Something went wrong"+err)
+    }
+    return sendResponse(res,1,results,201,"data added")
+  })
+
+    //return sendResponse(res, 1, createdReading, 201, "Data added successfully");
+  } catch (error) {
+    console.error("Error:", error);
+    return sendResponse(res, 0, "", 500, "Something went wrong");
+  }
+};
+
+exports.createCharges1 = async (req, res) => {
+  try {
+    const body = req.body;
+    const { charge_created_by } = body;
+
+    // Assuming getUserByUsernameExtended returns a Promise
+    const user = await UserModel.getUserByUsernameExtended(charge_created_by);
+
+    if (!user) {
+      return sendResponse(res, 0, '', 500, 'No user found');
+    }
+
+    const chargeData = {
+      ...body,
+      charge_created_by: user.id,
+    };
+
+    const createdCharge = await ChargeModel.createUtilityCharge(chargeData);
+
+    return sendResponse(res, 1, createdCharge, 201, 'Data added successfully');
+  } catch (error) {
+    console.error('Error:', error);
+    return sendResponse(res, 0, '', 500, 'Something went wrong');
+  }
+};
