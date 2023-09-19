@@ -31,6 +31,7 @@ app.use('/api/v1/auth/',require('./src/routes/authRouter'));
 app.use('/api/v1/properties',require('./src/routes/propertiesRouter'));
 app.use('/api/v1/units',require('./src/routes/unitsRouter'));
 app.use('/api/v1/utilities',require('./src/routes/utilityRouter'));
+app.use('/api/v1/invoices',require('./src/routes/invoiceRouter'));
 app.use('/api/v1/tenants',require('./src/routes/tenantRouter'));
 app.use('/api/v1/payments',require('./src/routes/paymentRouter'));
 app.use('/api/v1/agents',require('./src/routes/agentRouter'));
@@ -44,3 +45,4 @@ app.get('/', (req, res) => {
 
 app.use(errorHandle)
 app.listen(PORT, ()=> console.log(`server running on ${PORT}`))
+//0798541970

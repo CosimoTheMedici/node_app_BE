@@ -1,26 +1,14 @@
-// static async getPreInvoiceData(req, res) {
-//     try {
-//       const products = ProductModel.getAllPreInvoiceDetails();
-
-
-
-//       // Convert the products array to a string
-//       const productsText = JSON.stringify(products, null, 2);
-
-//       // Write the string to a text file
-//       fs.writeFileSync('products.txt', productsText);
-
-//       return res.status(200).send('Products data saved to products.txt');
-//     } catch (error) {
-//       console.error(error);
-//       return res.status(500).send('Error saving products data');
-//     }
-//   }
 
 
 
 const { validateUser } = require("../middleware/user_Validator");
 const jwt_decode = require('jwt-decode');
+const fs = require('fs');
+const InvoiceModel = require('../models/invoiceModel');
+const { sendResponse } = require("../middleware/response");
+const path = require("path");
+
+
 
 
   exports.fileCreatePendingInvoices =  async (req,res) => {
@@ -87,3 +75,68 @@ const jwt_decode = require('jwt-decode');
 
     
 }
+
+exports.createPreInvoices = async (req, res) => {
+  try {
+    let { body, headers } = req;
+    const token = headers.authorization.slice(7);
+    const decoded = jwt_decode(token);
+
+    const testBody = {
+      email: decoded.email,
+      createdBy: body.reading_createdBy
+    };
+
+    //const user = await validateUser(testBody);
+
+    
+
+    const date = new Date();
+    const current_date = `${date.getFullYear()}_${date.getMonth() + 1}_${date.getDate()}`;
+    const current_time = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
+    const date_time = `${current_date} ${current_time}`;
+
+    InvoiceModel.getUnitsAndConsumptionData((error, data) => {
+        if (error) {
+          console.log(error)
+
+          return sendResponse(res, 0, "", 500, "Something went wrong");
+        }
+
+        
+    
+        const folderPath = path.join(__dirname, 'invoiceFiles'); // You can change 'data' to your desired folder name
+        const filename = path.join(`/home/cosmas/workspace/may_projectBE/rentalBooksBe/src/invoiceFiles/`, `${current_date}.json`);
+        fs.writeFile(filename, JSON.stringify(data), (err) => {
+          if (err) {
+            console.log("err",err)
+            return res.status(500).json({ error: 'Error saving data to file' });
+          }
+    
+          // Read the data from the file
+          fs.readFile(filename, 'utf8', (error, fileData) => {
+            if (error) {
+              return res.status(500).json({ error: 'Error reading data from file' });
+            }
+    
+            // Send the data to the frontend
+            //res.json(JSON.parse(fileData));
+            return sendResponse(res,1,fileData,200,"read data")
+          });
+        });
+      });
+
+  //   ReadingModel.createUtilityReading(body,(err,results) =>{
+  //     if(err){
+  //     console.log(err)
+  //     return sendResponse(res,0,"",500,"Something went wrong"+err)
+  //   }
+  //   return sendResponse(res,1,results,201,"data added")
+  // })
+
+    //return sendResponse(res, 1, createdReading, 201, "Data added successfully");
+  } catch (error) {
+    console.error("Error:", error);
+    return sendResponse(res, 0, "", 500, "Something went wrong");
+  }
+};
