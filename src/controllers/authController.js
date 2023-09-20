@@ -59,26 +59,33 @@ exports.loginUser = (req,res) =>{
         if(!results){
             return res.json({
                 success:0,
-                data:"Invalid email or password"
+                data:"Invalid email  or password"
             });
         }
         const compareResults = compareSync(body.password,results.password)
-        // console.log("compareResults",compareResults)
-        // console.log("results.password",results.password)
-        // console.log("body.password",body.password)
+        
+       
+        
         if(compareResults){
             results.password = undefined;
             results.refreshToken = undefined;
             results.id = undefined;
+            console.log("results",results)
             const accessToken = jwt.sign(
-                                    {result:results},
+                                    {
+                                        email: results.email,
+                                        status: results.status,
+                                        user_category: results.user_category,
+                                        uuid: results.uuid,
+                                        business_id: results.business_id
+                                    },
                                     process.env.ACCESS_TOKEN_SECRET,
                                     {expiresIn:"1h" }
                                 );
             const refreshToken = jwt.sign(
                                     {result:results},
                                     process.env.REFRESH_TOKEN_SECRET,
-                                    {expiresIn:"1h" }
+                                    {expiresIn:"9h" }
                                 );compareSync
                                 console.log("refreshToken.length",refreshToken)
                                 console.log("accessToken.length",accessToken)
