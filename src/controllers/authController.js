@@ -70,7 +70,7 @@ exports.loginUser = (req,res) =>{
             results.password = undefined;
             results.refreshToken = undefined;
             results.id = undefined;
-            console.log("results",results)
+            
             const accessToken = jwt.sign(
                                     {
                                         email: results.email,
