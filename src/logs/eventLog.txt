@@ -265,3 +265,21 @@
 20230922	15:58:14	715f5e3c-9fa5-4c76-8263-7aeebe00c186	GET 	http://localhost:5173	/api/v1/agents/
 20230922	15:58:15	4ee15e05-52d8-476b-8109-595183ab48aa	GET 	http://localhost:5173	/api/v1/agents/
 20230922	15:58:15	c6c712a9-0387-4522-b7da-b75978bda688	GET 	http://localhost:5173	/api/v1/agents/
+20250613	01:18:13	5dd2209d-9664-421d-a1f1-02298d923495	POST 	undefined	/api/v1/auth/users/login
+20250613	01:18:13	cce58186-c552-47ee-8ef8-c2e08598b141	TypeError Cannot read properties of undefined (reading 'query')
+20250615	19:17:26	87a74932-2c1f-4231-8b34-a395ae5c7ab6	POST 	undefined	/api/v1/auth/users/login
+20250615	19:17:26	0f366c2e-e9da-4f17-9890-4e8ea5cb1972	TypeError Cannot read properties of undefined (reading 'query')
+20250615	20:40:58	04a83448-1a47-48ab-9a10-cf6016dd8ae4	POST 	undefined	/api/v1/auth/users/login
+20250615	20:40:58	d71406cd-5241-4206-852b-720c6326c6a4	TypeError UserModel.getUserByUsername is not a function
+20250615	22:27:03	341693c2-ff78-452c-870b-94fa7a2924be	POST 	undefined	/api/v1/auth/users/login
+20250615	22:32:29	1afbe057-5104-425d-aa45-1e1968cc8ccc	POST 	undefined	/api/v1/auth/users/login
+20250615	22:38:03	9b01f221-0020-46b9-a974-015892e8441a	POST 	undefined	/api/v1/auth/users/login
+20250615	22:38:43	f8cbf871-1946-47c5-b369-a55f83b5e198	POST 	undefined	/api/v1/auth/users/login
+20250616	23:41:04	8248007a-8c87-4310-ad75-f90a7ca7fc9a	POST 	undefined	/api/v1/auth/users/login
+20250616	23:41:30	e72229ef-9b73-4072-8ed0-4fa9e424f77e	POST 	undefined	/api/v1/auth/users/login
+20250616	23:41:31	028a764a-fbf2-46e4-b5ec-5a8a6067fa9b	POST 	undefined	/api/v1/auth/users/login
+20250616	23:41:32	ede0a891-02c6-4e8a-acfb-1e6805d26343	POST 	undefined	/api/v1/auth/users/login
+20250616	23:41:34	ff5df92d-922a-405a-873a-05ea73727b28	POST 	undefined	/api/v1/auth/users/login
+20250616	23:41:51	5437ad69-46eb-411b-8f11-8291d173d558	POST 	undefined	/api/v1/auth/users/login
+20250616	23:42:00	059afd31-05d0-4bd9-b106-1c0c62b801e0	POST 	undefined	/api/v1/auth/users/login
+20250616	23:42:06	86d6c8a6-a395-4abe-aa78-6b6d3b6ba2f4	POST 	undefined	/api/v1/auth/users/login

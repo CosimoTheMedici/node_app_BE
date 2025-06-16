@@ -28,7 +28,7 @@ router.post('/users/loging',authController.createNewUser);
 router.post('/users/login',authController.loginUser);
 router.get('/users/logout',logoutController.handleLogoutRequest);
 router.get('/refresh/token',refreshToken.handleRefreshToken);
-router.get('/users/data',validateToken,rolesValidator(2001), authController.getUsersDatas);
+router.get('/users/data',validateToken,rolesValidator(2001), authController.getUsersData);
 
 
 

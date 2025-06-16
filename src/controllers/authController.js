@@ -1,170 +1,134 @@
 const {genSaltSync,hashSync,compareSync} = require("bcrypt");
 var generator = require('generate-password');
 const UserModel = require('../models/authModel')
-const uuid = require('uuid');
+const { v1: uuidv1 } = require('uuid');
 const jwt = require('jsonwebtoken');
 const { sendEmailWithAttachment } = require("../middleware/systemMailer");
 const { createPDF,generateReceipts, generatecustomReceipt } = require("../middleware/pdfCreator");
 const { sendResponse } = require("../middleware/response");
 require('dotenv').config();
 
-exports.createNewUser = (email,cat)=>{
-  
-    // console.log('req',email)
-    // console.log('req',cat)
-    var password = generator.generate({
-        length: 10,
-        numbers: true,
-        uppercase: true
+
+// Helper function to omit sensitive fields
+const sanitizeUser = (user) => {
+  const { password, refreshToken, salt, ...safeUser } = user || {};
+  return safeUser;
+};
+
+exports.createNewUser = (email, category) => {
+  const password = generator.generate({
+    length: 10,
+    numbers: true,
+    uppercase: true
+  });
+
+  const salt = genSaltSync(10);
+  const hashPassword = hashSync(password, salt);
+
+  const payload = {
+    password: hashPassword,
+    uuid: uuidv1(),
+    email,
+    user_category: category,
+    business_id: 4,
+    status: 1,
+    salt,
+    refreshToken: ""
+  };
+
+  return { payload, password };
+};
+
+exports.loginUser = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return sendResponse(res, 0, 'Email and password are required', 400);
+    }
+
+    const user = await UserModel.findByEmail(email);
+    
+    if (!user) {
+      return sendResponse(res, 0, 'Invalid email or password', 401);
+    }
+
+    const isPasswordValid = compareSync(password, user.password);
+    if (!isPasswordValid) {
+      return sendResponse(res, 0, 'Invalid email or password', 401);
+    }
+
+    const accessToken = jwt.sign(
+      {
+        email: user.email,
+        status: user.status,
+        user_category: user.user_category,
+        uuid: user.uuid,
+        business_id: user.business_id
+      },
+      process.env.ACCESS_TOKEN_SECRET,
+      { expiresIn: '1h' }
+    );
+
+    const refreshToken = jwt.sign(
+      { email: user.email },
+      process.env.REFRESH_TOKEN_SECRET,
+      { expiresIn: '9h' }
+    );
+
+    await UserModel.updateRefreshToken(refreshToken, user.email);
+
+    res.cookie('jwt', refreshToken, {
+      httpOnly: true,
+      sameSite: 'None',
+      secure: true,
+      maxAge: 24 * 60 * 60 * 1000
     });
 
-    let uuidV1 = uuid.v1()
-    let salt = genSaltSync(10)
-    let hashPassword = hashSync(password,salt);
-    let payload = {
-                    
-                    password:hashPassword,
-                    uuid:uuidV1,
-                    email:email,
-                    user_category:cat,
-                    business_id:4,
-                    status:1,
-                    salt:salt,
-                    cat:'agent',
-                    refreshToken:""
+    return sendResponse(res, 1, 'Login successful', 200, {
+      accessToken,
+      user: sanitizeUser(user)
+    });
 
+  } catch (error) {
+    console.error('Login error:', error);
+    return sendResponse(res, 0, 'Server error', 500);
+  }
+};
 
-                  }
-
-//    console.log( compareSync(password,hashPassword))
-//    console.log(payload)
-            let payloadRes = {payload,password}
-    return payloadRes
-}
-
-exports.loginUser = (req,res) =>{
-    const body = req.body;
-  
-    //generateReceipt(products,1000)
-    //generateReceipts()
-    //generatecustomReceipt('John Smith', 1234.56);
-
-    //createPDF2()
-    //sendEmailWithAttachment("cosmasthuku4@gmail.com")
-   
-    UserModel.getUserByUsername(body.email,(err,results) =>{
-        if(err){
-            console.log(err)
-        }
-        if(!results){
-            return res.json({
-                success:0,
-                data:"Invalid email  or password"
-            });
-        }
-        const compareResults = compareSync(body.password,results.password)
-        
-       
-        
-        if(compareResults){
-            results.password = undefined;
-            results.refreshToken = undefined;
-            results.id = undefined;
-            
-            const accessToken = jwt.sign(
-                                    {
-                                        email: results.email,
-                                        status: results.status,
-                                        user_category: results.user_category,
-                                        uuid: results.uuid,
-                                        business_id: results.business_id
-                                    },
-                                    process.env.ACCESS_TOKEN_SECRET,
-                                    {expiresIn:"1h" }
-                                );
-            const refreshToken = jwt.sign(
-                                    {result:results},
-                                    process.env.REFRESH_TOKEN_SECRET,
-                                    {expiresIn:"9h" }
-                                );compareSync
-                                console.log("refreshToken.length",refreshToken)
-                                console.log("accessToken.length",accessToken)
-
-                                
-           UserModel.updateRefreshToken(refreshToken,results.email,(err,results) =>{
-            if(err){
-                console.log(err)
-            }
-            if(!results){
-                return res.json({
-                    success:0,
-                    data:"something went-wrong"
-                });
-            }
-            if(results){
-               // res.cookie('jwt',refreshToken,{maxAge:24*60*60*1000});
-                res.cookie('jwt',refreshToken,{httpOnly:true, sameSite:'None', secure:true,maxAge:24*60*60*1000});
-                return res.json({
-                    success:1,
-                    message:"login successfully",
-                    accessToken:accessToken,
-                });
-            }
-           })
-
-        } else {
-            return res.json({
-                success:0,
-                data:"Invalid email or password"
-            });
-        }
-    })
-
-}
-
-exports.createEmployeeUser = (req,res) => {
-    const body = req.body
+exports.createEmployeeUser = async (req, res) => {
+  try {
+    const { password, ...userData } = req.body;
     const salt = genSaltSync(10);
-    //body.password = //(body.password,salt);
+    userData.password = hashSync(password, salt);
 
-    //const userReqData = new EmployeeModel(body)
+    const result = await UserModel.createUser(userData);
+    
+    return sendResponse(res, 1, 'User created successfully', 201, {
+      userId: result.insertId
+    });
 
-    UserModel.createUser(body,(err,results) =>{
-        if(err){
-        console.log(err)
-        return res.status(500).json({
-            success:0,
-            message:"Database connection invalid"
-        })
-      }
-      return res.status(200).json({
-        success:1,
-        data:results,
-        message:"user added"
-      })
-    })
-}
+  } catch (error) {
+    console.error('Create user error:', error);
+    return sendResponse(res, 0, 'Failed to create user', 500);
+  }
+};
 
-exports.getUsersDatas = (req,res) => {
-    const body = req.body
-   
+exports.getUsersData = async (req, res) => {
+  try {
+    const users = await UserModel.getAllUsers();
+    const sanitizedUsers = users.map(user => sanitizeUser(user));
+    
+    return sendResponse(res, 1, 'Users retrieved successfully', 200, {
+      users: sanitizedUsers
+    });
 
-    UserModel.getAllUsers((err,results) =>{
-        if(err){
-        console.log(err)
-        return res.status(500).json({
-            success:0,
-            message:"Database ection invalid"
-        })
-      }
-      return res.json({
-        success:1,
-        data:results,
-        message:"user added"
-      })
-    })
-}
+  } catch (error) {
+    console.error('Get users error:', error);
+    return sendResponse(res, 0, 'Failed to retrieve users', 500);
+  }
+};
 
-exports.testing = (req,res) => {
-    return sendResponse(res,0,"",200,"server working")
-}
+exports.testing = (req, res) => {
+  return sendResponse(res, 1, 'Server working', 200);
+};
